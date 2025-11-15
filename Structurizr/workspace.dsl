@@ -155,30 +155,18 @@ workspace "Система контроля и анализа потреблен�
         analyticsService -> analyticsDB "Чтение/запись" "SQL"
 
         # Связи компонентов внутри сервисов
-        apiGateway -> authController "Аутентификация и авторизация" "HTTP/REST"
-        apiGateway -> userController "Управление пользователями" "HTTP/REST"
-        brigadeService -> userController "Управление пользователями" "HTTP/REST"
         authController -> authBusinessLogic
         userController -> userBusinessLogic
         authBusinessLogic -> userRepository
         userBusinessLogic -> userRepository
         userRepository -> usersDB "Чтение/запись" "SQL"
 
-        apiGateway -> brigadeRouter "Управление бригадами" "HTTP/REST"
-        inspectionService -> brigadeRouter "Управление бригадами" "HTTP/REST"
-        analyticsService -> brigadeRouter "Управление бригадами" "HTTP/REST"
         brigadeRouter -> brigadeBusinessLogic
         brigadeBusinessLogic -> userService "Получает информацию об инспекторах" "HTTP/REST"
         brigadeBusinessLogic -> messageBroker "Подписан на события задач" "Kafka"
         brigadeBusinessLogic -> brigadeRepository
         brigadeRepository -> brigadesDB "Чтение/запись" "SQL"
 
-        apiGateway -> contractRouter "Управление договорами" "HTTP/REST"
-        apiGateway -> objectRouter "Управление объектами проверки" "HTTP/REST"
-        apiGateway -> registryRouter "Управление реестром" "HTTP/REST"
-        apiGateway -> subscriberRouter "Управление абонентами" "HTTP/REST"
-        inspectionService -> contractRouter "Управление договорами" "HTTP/REST"
-        analyticsService -> objectRouter "Управление объектами проверки" "HTTP/REST"
         contractRouter -> contractBusinessLogic
         objectRouter -> objectBusinessLogic
         registryRouter -> registryBusinessLogic
@@ -198,16 +186,11 @@ workspace "Система контроля и анализа потреблен�
         objectRepository -> subscribersDB "Чтение/запись" "SQL"
         subscriberRepository -> subscribersDB "Чтение/запись" "SQL"
 
-        apiGateway -> taskRouter "Управление задачами" "HTTP/REST"
-        inspectionService -> taskRouter "Управление задачами" "HTTP/REST"
-        subscriberService -> taskRouter "Управление задачами" "HTTP/REST"
         taskRouter -> taskBusinessLogic
         taskBusinessLogic -> messageBroker "Публикует события задач и подписан на события проверок" "Kafka"
         taskBusinessLogic -> taskRepository
         taskRepository -> tasksDB "Чтение/запись" "SQL"
 
-        apiGateway -> inspectionRouter "Управление проверками" "HTTP/REST"
-        analyticsService -> inspectionRouter "Управление проверками" "HTTP/REST"
         inspectionRouter -> inspectionBusinessLogic
         inspectionBusinessLogic -> analyzerService "Проверяет фото приборов учета" "HTTP/REST"
         inspectionBusinessLogic -> fileService "Сохраняет фотографии и акты" "HTTP/REST"
@@ -218,16 +201,12 @@ workspace "Система контроля и анализа потреблен�
         inspectionBusinessLogic -> inspectionRepository
         inspectionRepository -> inspectionsDB "Чтение/запись" "SQL"
 
-        apiGateway -> fileRouter "Управление файлами" "HTTP/REST"
-        inspectionService -> fileRouter "Сохраняет фотографии и акты" "HTTP/REST"
-        analyticsService -> fileRouter "Сохраняет отчеты" "HTTP/REST"
         fileRouter -> fileBusinessLogic
         fileBusinessLogic -> fileRepository
         fileBusinessLogic -> fileStorage
         fileRepository -> filesDB "Чтение/запись" "SQL"
         fileStorage -> objectStorage "Чтение/запись" "HTTP"
 
-        apiGateway -> analyticsRouter "Управление аналитикой" "HTTP/REST"
         analyticsRouter -> analyticsBusinessLogic
         cronService -> analyticsBusinessLogic
         analyticsBusinessLogic -> fileService "Сохраняет отчеты" "HTTP/REST"
