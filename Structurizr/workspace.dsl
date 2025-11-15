@@ -17,31 +17,32 @@ workspace "Система контроля и анализа потреблен�
             # API Gateway
             apiGateway = container "API Gateway" "Единая точка входа для всех API запросов" "NodeJS" "ApiGateway"
 
-            # Микросервисы
-            userService = container "User Service" "Управление пользователями и авторизация" "NodeJS" "Microservice"
-            brigadeService = container "Brigade Service" "Управление бригадами и их составом" "Go" "Microservice"
-            subscriberService = container "Subscriber Service" "Управление абонентами и их данными" "Go" "Microservice"
-            taskService = container "Task Service" "Управление задачами и их жизненным циклом" "Go" "Microservice"
-            inspectionService = container "Inspection Service" "Проведение и фиксация результатов проверок" "Go" "Microservice"
-            fileService = container "File Service" "Централизованное хранение файлов" "Go" "Microservice"
-            analyticsService = container "Analytics Service" "Генерация отчетов и аналитика" "Go" "Microservice"
-            analyzerService = container "Photo Analyzer Service" "Анализ фотографий на искажения" "Python" "Microservice"
+            # Архитектурные кванты
+            inspectionsQuant = container "Inspections Quant" "Архитектурный квант проверок" {
+                tags "Quant"
 
-            # Базы данных
-            usersDB = container "Users Database" "База данных пользователей" "PostgreSQL" "Database"
-            brigadesDB = container "Brigades Database" "База данных бригад" "PostgreSQL" "Database"
-            subscribersDB = container "Subscribers Database" "База данных абонентов" "PostgreSQL" "Database"
-            tasksDB = container "Tasks Database" "База данных задач" "PostgreSQL" "Database"
-            inspectionsDB = container "Inspections Database" "База данных проверок" "PostgreSQL" "Database"
-            filesDB = container "Files Database" "Метаданные файлов" "PostgreSQL" "Database"
-            reportsDB = container "Reports Database" "База данных отчетов" "PostgreSQL" "Database"
-            analyticsDB = container "Analytics Database" "База данных аналитики" "Clickhouse" "Database"
+                userService = component "User Service" "Управление пользователями и авторизация" "NodeJS" "Microservice"
+                brigadeService = component "Brigade Service" "Управление бригадами и их составом" "Go" "Microservice"
+                subscriberService = component "Subscriber Service" "Управление абонентами и их данными" "Go" "Microservice"
+                taskService = component "Task Service" "Управление задачами и их жизненным циклом" "Go" "Microservice"
+                inspectionService = component "Inspection Service" "Проведение и фиксация результатов проверок" "Go" "Microservice"
+                fileService = component "File Service" "Централизованное хранение файлов" "Go" "Microservice"
+                analyticsService = component "Analytics Service" "Генерация отчетов и аналитика" "Go" "Microservice"
+                analyzerService = component "Photo Analyzer Service" "Анализ фотографий на искажения" "Python" "Microservice"
 
-            # Хранилища
-            objectStorage = container "Object Storage" "Хранилище объектов" "MinIO" "Storage"
+                usersDB = component "Users Database" "База данных пользователей" "PostgreSQL" "Database"
+                brigadesDB = component "Brigades Database" "База данных бригад" "PostgreSQL" "Database"
+                subscribersDB = component "Subscribers Database" "База данных абонентов" "PostgreSQL" "Database"
+                tasksDB = component "Tasks Database" "База данных задач" "PostgreSQL" "Database"
+                inspectionsDB = component "Inspections Database" "База данных проверок" "PostgreSQL" "Database"
+                filesDB = component "Files Database" "Метаданные файлов" "PostgreSQL" "Database"
+                reportsDB = component "Reports Database" "База данных отчетов" "PostgreSQL" "Database"
+                analyticsDB = component "Analytics Database" "База данных аналитики" "Clickhouse" "Database"
 
-            # Брокер сообщений
-            messageBroker = container "Message Broker" "Асинхронное взаимодействие между сервисами" "Kafka" "MessageBroker"
+                objectStorage = component "Object Storage" "Хранилище объектов" "MinIO" "Storage"
+
+                messageBroker = component "Message Broker" "Асинхронное взаимодействие между сервисами" "Kafka" "MessageBroker"
+            }
         }
 
         # Связи между людьми и системой
@@ -53,14 +54,8 @@ workspace "Система контроля и анализа потреблен�
         mobileApp -> apiGateway "Отправляет API запросы" "HTTPS/REST"
         webPortal -> apiGateway "Отправляет API запросы" "HTTPS/REST"
 
-        # Связи API Gateway с микросервисами
-        apiGateway -> userService "Маршрутизирует запросы" "HTTP/REST"
-        apiGateway -> brigadeService "Маршрутизирует запросы" "HTTP/REST"
-        apiGateway -> subscriberService "Маршрутизирует запросы" "HTTP/REST"
-        apiGateway -> taskService "Маршрутизирует запросы" "HTTP/REST"
-        apiGateway -> inspectionService "Маршрутизирует запросы" "HTTP/REST"
-        apiGateway -> fileService "Маршрутизирует запросы" "HTTP/REST"
-        apiGateway -> analyticsService "Маршрутизирует запросы" "HTTP/REST"
+        # Связи API Gateway с архитектурными квантами
+        apiGateway -> inspectionsQuant "Маршрутизирует запросы" "HTTP/REST"
 
         # Взаимодействие микросервисов
         inspectionService -> analyzerService "Проверяет фото приборов учета" "HTTP/REST"
@@ -114,6 +109,14 @@ workspace "Система контроля и анализа потреблен�
             description "Показывает верхнеуровневую архитектуру системы"
         }
 
+        # Диаграмма компонентов
+        component inspectionsQuant "InspectionsQuant" {
+            include *
+            autoLayout
+            title "Диаграмма компонентов архитектурного кванта проверок"
+            description "Показывает внутреннюю архитектуру кванта проверок"
+        }
+
         theme default
 
         # Стили для элементов
@@ -134,19 +137,26 @@ workspace "Система контроля и анализа потреблен�
                 background #ff6b35
             }
 
+            element "Quant" {
+                shape Ellipse
+            }
+
             element "Microservice" {
                 shape Hexagon
                 background #1168bd
+                color #ffffff
             }
 
             element "MessageBroker" {
                 shape Pipe
                 background #ff9500
+                color #ffffff
             }
 
             element "Database" {
                 shape Cylinder
                 background #438dd5
+                color #ffffff
             }
 
             element "Storage" {

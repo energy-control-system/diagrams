@@ -1,0 +1,111 @@
+@startuml Subscriber Service Component Diagram
+
+!theme plain
+skinparam componentStyle uml2
+
+title Subscriber Service - Component Diagram
+
+package "Application Layer" {
+    component [Main] as main
+    component [App] as app
+}
+
+package "HTTP API Layer" {
+    component [HTTP Server] as httpServer
+    component [Router] as router
+    
+    package "Handlers" {
+        component [Subscriber Handler] as subHandler
+        component [Object Handler] as objHandler
+        component [Contract Handler] as contractHandler
+        component [Registry Handler] as registryHandler
+    }
+}
+
+package "Business Logic Layer" {
+    component [Subscriber Service] as subService
+    component [Object Service] as objService
+    component [Contract Service] as contractService
+    component [Registry Service] as registryService
+}
+
+package "Data Access Layer" {
+    component [Subscriber Repository] as subRepo
+    component [Object Repository] as objRepo
+    component [Contract Repository] as contractRepo
+}
+
+package "External Integrations" {
+    component [Task Service Client] as taskClient
+    component [Kafka Consumer] as kafkaConsumer
+}
+
+package "Infrastructure" {
+    database "PostgreSQL" as postgres
+    queue "Kafka" as kafka
+    node "Task Service\n(External)" as taskService
+}
+
+package "Configuration" {
+    component [Config] as config
+}
+
+' Application flow
+main --> app
+app --> config
+app --> httpServer
+app --> kafkaConsumer
+
+' HTTP Server flow
+httpServer --> router
+router --> subHandler
+router --> objHandler
+router --> contractHandler
+router --> registryHandler
+
+' Handler to Service flow
+subHandler --> subService
+objHandler --> objService
+contractHandler --> contractService
+registryHandler --> registryService
+
+' Service to Repository flow
+subService --> subRepo
+objService --> objRepo
+contractService --> contractRepo
+contractService --> subRepo
+registryService --> subRepo
+registryService --> objRepo
+registryService --> contractRepo
+
+' Repository dependencies
+contractRepo --> subRepo : uses
+contractRepo --> objRepo : uses
+
+' Repository to Database
+subRepo --> postgres
+objRepo --> postgres
+contractRepo --> postgres
+
+' External integrations
+contractService --> taskClient
+taskClient --> taskService
+
+' Kafka event handling
+kafkaConsumer --> kafka
+kafka --> kafkaConsumer : inspection events
+kafkaConsumer ..> contractService : SubscriberOnInspectionEvent()
+
+note right of contractService
+  Обрабатывает события инспекций
+  из Kafka и обновляет статусы
+  подписчиков
+end note
+
+note right of registryService
+  Парсит Excel файлы реестра
+  и выполняет массовые операции
+  upsert для всех сущностей
+end note
+
+@enduml

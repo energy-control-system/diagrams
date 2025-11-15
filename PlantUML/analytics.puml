@@ -1,0 +1,113 @@
+@startuml Analytics Service Component Diagram
+
+!theme plain
+skinparam componentStyle uml2
+
+title Analytics Service - Component Diagram
+
+package "Application Layer" {
+    component [Main] as main
+    component [App] as app
+}
+
+package "HTTP API Layer" {
+    component [HTTP Server] as httpServer
+    component [Router] as router
+    
+    package "Handlers" {
+        component [Analytics Handler] as analyticsHandler
+    }
+}
+
+package "Business Logic Layer" {
+    component [Analytics Service] as analyticsService
+    component [Cron Service] as cronService
+}
+
+package "Data Access Layer" {
+    component [Analytics Repository] as analyticsRepo
+}
+
+package "External Integrations" {
+    component [Brigade Client] as brigadeClient
+    component [File Client] as fileClient
+    component [Inspection Client] as inspectionClient
+    component [Subscriber Client] as subscriberClient
+    component [Kafka Consumer] as kafkaConsumer
+}
+
+package "Infrastructure" {
+    database "PostgreSQL" as postgres
+    database "ClickHouse" as clickhouse
+    queue "Kafka" as kafka
+    node "Brigade Service\n(External)" as brigadeService
+    node "File Service\n(External)" as fileService
+    node "Inspection Service\n(External)" as inspectionService
+    node "Subscriber Service\n(External)" as subscriberService
+}
+
+package "Configuration" {
+    component [Config] as config
+}
+
+' Application flow
+main --> app
+app --> config
+app --> httpServer
+app --> kafkaConsumer
+app --> cronService
+
+' HTTP Server flow
+httpServer --> router
+router --> analyticsHandler
+
+' Handler to Service flow
+analyticsHandler --> analyticsService
+
+' Service to Repository flow
+analyticsService --> analyticsRepo
+
+' Repository to Database
+analyticsRepo --> postgres
+analyticsRepo --> clickhouse
+
+' External integrations
+analyticsService --> brigadeClient
+analyticsService --> fileClient
+analyticsService --> inspectionClient
+analyticsService --> subscriberClient
+
+brigadeClient --> brigadeService
+fileClient --> fileService
+inspectionClient --> inspectionService
+subscriberClient --> subscriberService
+
+' Kafka event handling
+kafkaConsumer --> kafka
+kafka --> kafkaConsumer : task events
+kafkaConsumer ..> analyticsService : SubscriberOnTaskEvent()
+
+' Cron service
+cronService --> analyticsService : CreateBasicReport()
+
+note right of analyticsService
+  Обрабатывает события задач
+  из Kafka и создает отчеты.
+  Использует внешние сервисы
+  для получения данных
+end note
+
+note right of cronService
+  Планирует автоматическое
+  создание ежедневных отчетов
+  по расписанию
+end note
+
+note right of analyticsRepo
+  Использует PostgreSQL для
+  хранения отчетов и
+  ClickHouse для аналитики
+  завершенных задач
+end note
+
+@enduml
