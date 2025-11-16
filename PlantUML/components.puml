@@ -1,0 +1,77 @@
+@startuml Energy Control System Component Diagram
+
+!theme plain
+skinparam componentStyle uml2
+skinparam linetype ortho
+
+title Диаграмма компонентов системы контроля и анализа потребления электроэнергии
+
+component [Мобильное приложение] as mobileApp
+component [Веб-портал] as webPortal
+
+component [API Gateway] as apiGateway
+
+component [Сервис пользователей] as userService
+component [Сервис бригад] as brigadeService
+component [Сервис абонентов] as subscriberService
+component [Сервис задач] as taskService
+component [Сервис проверок] as inspectionService
+component [Сервис файлов] as fileService
+component [Сервис аналитики] as analyticsService
+component [Сервис анализа фотографий] as analyzerService
+
+database [База данных пользователей] as usersDB
+database [База данных бригад] as brigadesDB
+database [База данных абонентов] as subscribersDB
+database [База данных задач] as tasksDB
+database [База данных проверок] as inspectionsDB
+database [База данных файлов] as filesDB
+database [База данных отчетов] as reportsDB
+database [База данных аналитики] as analyticsDB
+
+storage [Хранилище объектов] as objectStorage
+
+queue [Брокер сообщений] as messageBroker
+
+mobileApp --> apiGateway
+webPortal --> apiGateway
+
+apiGateway --> userService
+apiGateway --> brigadeService
+apiGateway --> subscriberService
+apiGateway --> taskService
+apiGateway --> inspectionService
+apiGateway --> fileService
+apiGateway --> analyticsService
+
+userService --> usersDB
+brigadeService --> brigadesDB
+subscriberService --> subscribersDB
+taskService --> tasksDB
+inspectionService --> inspectionsDB
+fileService --> filesDB
+fileService --> objectStorage
+analyticsService --> reportsDB
+analyticsService --> analyticsDB
+
+inspectionService --> analyzerService
+inspectionService --> fileService
+inspectionService --> brigadeService
+inspectionService --> subscriberService
+inspectionService --> taskService
+
+analyticsService --> fileService
+analyticsService --> subscriberService
+analyticsService --> brigadeService
+analyticsService --> inspectionService
+
+brigadeService --> userService
+subscriberService --> taskService
+
+taskService --> messageBroker
+inspectionService --> messageBroker
+analyticsService --> messageBroker
+brigadeService --> messageBroker
+subscriberService --> messageBroker
+
+@enduml
